@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotels</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Hotels</h1>
+  <select  id="cities">
+    <option value="all">All Cities</option>
+    <option value="all">Tbilisi</option>
+    <option value="kutaisi">Kutaisi</option>
+    <option value="">Telavi</option>
+    <option value="">Batumi</option>
+    <option value="">Bakuriani</option>
+  </select>
+<button class="nav-btn" onclick="goToBookings()">
+  My Bookings
+</button>
+  <div id="hotels"></div>
+  
+<div class="top-right">
+  <button onclick="goToRegister()">Register</button>
+</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
