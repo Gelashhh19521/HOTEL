@@ -320,3 +320,52 @@ h1 {
     transform: none;
   }
 }
+@media (max-width: 768px) {
+  .top-right {
+    position: static;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    width: 100%;
+  }
+
+  .top-right button {
+    width: 180px;
+    font-size: 18px;
+  }
+
+  .top-buttons {
+    gap: 10px;
+    padding: 0 10px;
+  }
+
+  .auth-box button {
+    font-size: 15px;
+    padding: 10px;
+  }
+}
+
+/* mobile */
+@media (max-width: 480px) {
+  .top-right {
+    margin-bottom: 15px;
+  }
+
+  .top-right button {
+    width: 100%;
+    max-width: 220px;
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  .top-buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .auth-box button {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
