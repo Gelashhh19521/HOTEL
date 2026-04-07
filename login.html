@@ -3,40 +3,41 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StarHotel - Register</title>
+  <title>Login</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="site-header">
-   <a href="./index.html"> <div class="logo-box">
-      <div class="logo-circle">
-        <img src="./photo/68b1b15f-9090-42de-9f81-10ac50de7476.jpg" alt="">
+  <header class="site-header">
+    <a href="./index.html">
+      <div class="logo-box">
+        <div class="logo-circle">
+          <img src="./photo/68b1b15f-9090-42de-9f81-10ac50de7476.jpg" alt="">
+        </div>
+        <h2>HotelHub</h2>
       </div>
-      <h2>HotelHub</h2>
-    </div></a>
+    </a>
 
     <nav class="main-nav">
-      <a href="index.html" class="active">Hotels</a>
+      <a href="index.html">Hotels</a>
       <a href="bookings.html">Booked Rooms</a>
       <a href="register.html">Register</a>
-      <a href="login.html">Login</a>
+      <a href="login.html" class="active">Login</a>
     </nav>
   </header>
 
   <main class="page">
     <section class="hero small-hero">
-      <h1>Register</h1>
-      <p>Create your account</p>
+      <h1>Login</h1>
+      <p>Sign in to your account</p>
     </section>
 
     <div class="auth-box">
-      <input type="text" id="name" placeholder="Name">
       <input type="email" id="email" placeholder="Email">
       <input type="password" id="password" placeholder="Password">
-      <button onclick="registerUser()">Register</button>
+      <button type="button" onclick="loginUser()">Login</button>
     </div>
   </main>
 
-  <script src="register.js"></script>
+  <script src="login.js"></script>
 </body>
 </html>

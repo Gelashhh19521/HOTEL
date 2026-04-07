@@ -2,6 +2,8 @@ const hotelsContainer = document.getElementById("hotels");
 const citiesSelect = document.getElementById("cities");
 
 function getAllHotels() {
+  hotelsContainer.innerHTML = `<p class="loading-text">Loading hotels...</p>`;
+
   fetch("https://hotelbooking.stepprojects.ge/api/Hotels/GetAll")
     .then(res => {
       if (!res.ok) {
@@ -14,7 +16,7 @@ function getAllHotels() {
     })
     .catch(error => {
       console.error(error);
-      hotelsContainer.innerHTML = "<p>Hotels could not be loaded.</p>";
+      hotelsContainer.innerHTML = "<p class='error-text'>Hotels could not be loaded.</p>";
     });
 }
 
@@ -43,6 +45,8 @@ function renderCities(cities) {
 }
 
 function getHotelsByCity(cityId) {
+  hotelsContainer.innerHTML = `<p class="loading-text">Loading hotels...</p>`;
+
   fetch(`https://hotelbooking.stepprojects.ge/api/Hotels/GetByCityId/${cityId}`)
     .then(res => {
       if (!res.ok) {
@@ -55,23 +59,35 @@ function getHotelsByCity(cityId) {
     })
     .catch(error => {
       console.error(error);
-      hotelsContainer.innerHTML = "<p>Filtered hotels could not be loaded.</p>";
+      hotelsContainer.innerHTML = "<p class='error-text'>Filtered hotels could not be loaded.</p>";
     });
 }
 
 function renderHotels(hotels) {
   hotelsContainer.innerHTML = "";
 
+  if (!hotels || hotels.length === 0) {
+    hotelsContainer.innerHTML = "<p class='empty-text'>No hotels found.</p>";
+    return;
+  }
+
   hotels.forEach(hotel => {
-    
     hotelsContainer.innerHTML += `
-      <div class="card">
-        <img src="${hotel.featuredImage || 'https://via.placeholder.com/250x180'}" alt="${hotel.name}">
-        <h3>${hotel.name}</h3>
-        <p>City: ${hotel.city || "Unknown"}</p>
-        <p>${hotel.address || "No address"}</p>
-        <button onclick="goToDetails(${hotel.id})">View Details</button>
-      </div>
+      <article class="hotel-card">
+        <div class="hotel-image-box">
+          <img src="${hotel.featuredImage}" alt="${hotel.name}">
+        </div>
+
+        <div class="hotel-content">
+          <span class="hotel-city-tag">${hotel.city}</span>
+          <h3>${hotel.name}</h3>
+          <p class="hotel-address">${hotel.address}</p>
+
+          <div class="hotel-card-footer">
+            <button class="primary-btn" onclick="goToDetails(${hotel.id})">View Details</button>
+          </div>
+        </div>
+      </article>
     `;
   });
 }
@@ -90,14 +106,6 @@ citiesSelect.addEventListener("change", function () {
     getHotelsByCity(selectedCityId);
   }
 });
-function goToBookings() {
-  window.location.href = "bookings.html";
-}
-function goToRegister() {
-  window.location.href = "register.html";
-}
 
 getAllHotels();
 getAllCities();
-
-

@@ -3,27 +3,39 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hotels</title>
+  <title>StarHotel - Hotels</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Hotels</h1>
-  <select  id="cities">
-    <option value="all">All Cities</option>
-    <option value="all">Tbilisi</option>
-    <option value="kutaisi">Kutaisi</option>
-    <option value="">Telavi</option>
-    <option value="">Batumi</option>
-    <option value="">Bakuriani</option>
-  </select>
-<button class="nav-btn" onclick="goToBookings()">
-  My Bookings
-</button>
-  <div id="hotels"></div>
-  
-<div class="top-right">
-  <button onclick="goToRegister()">Register</button>
-</div>
+  <header class="site-header">
+    <a href="./index.html"><div class="logo-box">
+      <div class="logo-circle">
+        <img src="./photo/68b1b15f-9090-42de-9f81-10ac50de7476.jpg" alt="">
+      </div>
+      <h2>HotelHub</h2>
+    </div></a>
+
+    <nav class="main-nav">
+      <a href="index.html" class="active">Hotels</a>
+      <a href="bookings.html">Booked Rooms</a>
+      <a href="register.html">Register</a>
+    </nav>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <h1>Hotels</h1>
+      <p>Choose your hotel and explore available rooms</p>
+    </section>
+
+    <section class="filter-bar">
+      <select id="cities">
+        <option value="all">All Cities</option>
+      </select>
+    </section>
+
+    <section id="hotels" class="hotels-grid"></section>
+  </main>
 
   <script src="app.js"></script>
 </body>

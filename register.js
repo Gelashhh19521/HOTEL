@@ -1,7 +1,13 @@
 function registerUser() {
+  console.log("registerUser called");
+
   const name = document.getElementById("name").value.trim();
   const emailInput = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
+
+  console.log("name:", name);
+  console.log("email:", emailInput);
+  console.log("password:", password);
 
   if (!name || !emailInput || !password) {
     alert("Please fill all fields ❌");
@@ -33,6 +39,7 @@ function registerUser() {
   })
     .then(res => {
       return res.text().then(text => {
+        console.log("SERVER STATUS:", res.status);
         console.log("SERVER RESPONSE:", text);
 
         if (!res.ok) {
@@ -45,15 +52,10 @@ function registerUser() {
     .then(data => {
       console.log("SUCCESS:", data);
       alert("Registered successfully ✅");
-      window.location.href = "index.html";
+      window.location.href = "login.html";
     })
     .catch(err => {
       console.log("ERROR:", err.message);
-
-      if (err.message.toLowerCase().includes("exist")) {
-        alert("User already exists ❌");
-      } else {
-        alert(err.message);
-      }
+      alert(err.message || "Registration failed ❌");
     });
 }

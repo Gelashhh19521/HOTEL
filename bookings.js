@@ -1,71 +1,77 @@
 const bookingsContainer = document.getElementById("bookings");
-
 const myCustomerName = sessionStorage.getItem("myCustomerName");
 
 function getBookings() {
-  fetch("https://hotelbooking.stepprojects.ge/api/Booking")
-    .then(res => {
-      if (!res.ok) {
-        throw new Error("Failed to fetch bookings");
-      }
-      return res.json();
-    })
-    .then(data => {
-      console.log("BOOKINGS DATA:", data);
-      renderBookings(data);
-    })
-    .catch(err => {
-      console.error(err);
-      bookingsContainer.innerHTML = "<p>Could not load bookings</p>";
-    });
+  const myBookedRooms = JSON.parse(localStorage.getItem("myBookedRooms")) || [];
+
+  const myBookings = myBookedRooms.filter(
+    booking => booking.customerName === myCustomerName
+  );
+
+  renderBookings(myBookings);
 }
 
 function renderBookings(bookings) {
   bookingsContainer.innerHTML = "";
 
-  if (!myCustomerName) {
-    bookingsContainer.innerHTML = "<p>No bookings yet</p>";
+  if (!bookings.length) {
+    bookingsContainer.innerHTML = "<p class='empty-text'>No bookings yet.</p>";
     return;
   }
 
-  const myBookings = bookings.filter(booking => booking.customerName === myCustomerName);
-
-  if (myBookings.length === 0) {
-    bookingsContainer.innerHTML = "<p>No bookings yet</p>";
-    return;
-  }
-
-  myBookings.forEach(booking => {
+  bookings.forEach((booking, index) => {
     bookingsContainer.innerHTML += `
-      <div class="booking-card">
-        <p><strong>Booking ID:</strong> ${booking.id}</p>
-        <p><strong>Hotel ID:</strong> ${booking.hotelId}</p>
-        <p><strong>Room ID:</strong> ${booking.roomId}</p>
-        <p><strong>Name:</strong> ${booking.customerName}</p>
-        <p><strong>Check In:</strong> ${booking.checkInDate}</p>
-        <p><strong>Check Out:</strong> ${booking.checkOutDate}</p>
-        <button class="delete-btn" onclick="deleteBooking(${booking.id})">Delete</button>
-      </div>
+      <article class="booking-card">
+        <img src="${booking.image}" alt="${booking.roomName}">
+        
+        <div class="booking-card-content">
+          <span class="hotel-city-tag">${booking.city}</span>
+          <h3>${booking.hotelName}</h3>
+          <p><strong>Room:</strong> ${booking.roomName}</p>
+          <p>${booking.address}</p>
+          <p><strong>Check In:</strong> ${booking.checkInDate}</p>
+          <p><strong>Check Out:</strong> ${booking.checkOutDate}</p>
+
+          <button class="danger-btn" onclick="deleteBooking(${index})">
+            Delete Booking
+          </button>
+        </div>
+      </article>
     `;
   });
 }
 
-function deleteBooking(id) {
-  fetch(`https://hotelbooking.stepprojects.ge/api/Booking/${id}`, {
-    method: "DELETE"
-  })
-  .then(res => {
-    if (!res.ok) {
-      throw new Error("Delete failed");
-    }
-    alert("Deleted successfully ✅");
+function deleteBooking(index) {
+  let myBookedRooms = JSON.parse(localStorage.getItem("myBookedRooms")) || [];
+
+  myBookedRooms.splice(index, 1);
+  localStorage.setItem("myBookedRooms", JSON.stringify(myBookedRooms));
+
+  showMessage("Booking deleted successfully ✅", "success");
+
+  setTimeout(() => {
     getBookings();
-  })
-  .catch(err => {
-    console.error(err);
-    alert("Delete failed ❌");
-  });
+  }, 700);
 }
 
+function showMessage(text, type) {
+  let oldMessage = document.querySelector(".custom-message");
+  if (oldMessage) oldMessage.remove();
+
+  const msg = document.createElement("div");
+  msg.className = `custom-message ${type}`;
+  msg.textContent = text;
+
+  document.body.appendChild(msg);
+
+  setTimeout(() => {
+    msg.classList.add("show");
+  }, 10);
+
+  setTimeout(() => {
+    msg.classList.remove("show");
+    setTimeout(() => msg.remove(), 300);
+  }, 2000);
+}
 
 getBookings();
