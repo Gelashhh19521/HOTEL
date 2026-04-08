@@ -13,22 +13,18 @@ const roomImagesByName = {
   "Executive Suite": "https://images.unsplash.com/photo-1584132967334-10e028bd69f7?auto=format&fit=crop&w=1200&q=80",
   "Deluxe Room": "https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=1200&q=80",
   "Standard Room": "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=80",
-  "Superior Twin Room":"https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=80",
-   "Superior Room":"https://ariaresortandspa.com/wp-content/uploads/2024/09/Superior-Room-Middle-Photo-scaled.jpg",
-   "Executive Room":"https://www.hoteltentrem.com/semarang/wp-content/uploads/sites/4/2025/01/Room-2-A-Executive-King-Bedroom-1366x768.jpg",
-   "Deluxe Double Room":"https://bluedolphinhotel.eu/wp-content/uploads/2023/04/01.Deluxe-Double-Room-Garden-View-1.jpg",
-   "Club Twin Room":"https://www.princehotels.com/takanawa/wp-content/uploads/sites/10/2019/07/Club-Superior-Twin-Room-Grand-Prince-Hotel-Takanawa-Tokyo-180816-1.jpg",
-   "Grand Deluxe Suite":"https://www.andamantra.com/images/rooms/grand-deluxe-2-bedroom/Pre-ADML-2.jpg",
-   "Superior Room, City View (High Floor)":"https://cf.bstatic.com/xdata/images/hotel/max1024x768/371926731.jpg?k=a47c1735dca9b6cc521c99cc668876e73c998214431a983aaaaa01261dc9de6c&o=",
-   
-  
+  "Superior Twin Room": "https://images.unsplash.com/photo-1611892440504-42a792e24d32?auto=format&fit=crop&w=1200&q=80",
+  "Superior Room": "https://ariaresortandspa.com/wp-content/uploads/2024/09/Superior-Room-Middle-Photo-scaled.jpg",
+  "Executive Room": "https://www.hoteltentrem.com/semarang/wp-content/uploads/sites/4/2025/01/Room-2-A-Executive-King-Bedroom-1366x768.jpg",
+  "Deluxe Double Room": "https://bluedolphinhotel.eu/wp-content/uploads/2023/04/01.Deluxe-Double-Room-Garden-View-1.jpg",
+  "Club Twin Room": "https://www.princehotels.com/takanawa/wp-content/uploads/sites/10/2019/07/Club-Superior-Twin-Room-Grand-Prince-Hotel-Takanawa-Tokyo-180816-1.jpg",
+  "Grand Deluxe Suite": "https://www.andamantra.com/images/rooms/grand-deluxe-2-bedroom/Pre-ADML-2.jpg",
+  "Superior Room, City View (High Floor)": "https://cf.bstatic.com/xdata/images/hotel/max1024x768/371926731.jpg?k=a47c1735dca9b6cc521c99cc668876e73c998214431a983aaaaa01261dc9de6c&o="
 };
 
 function getRoomImage(roomName) {
-  return roomImagesByName[roomName] || currentHotel.featuredImage;
+  return roomImagesByName[roomName] || (currentHotel ? currentHotel.featuredImage : "");
 }
-
-
 
 if (!myCustomerName) {
   myCustomerName = "Gela_" + Date.now();
@@ -39,13 +35,17 @@ function getHotelDetails() {
   detailsContainer.innerHTML = `<p class="loading-text">Loading hotel details...</p>`;
 
   Promise.all([
-    fetch(`https://hotelbooking.stepprojects.ge/api/Hotels/GetHotel/${hotelId}`).then(r => {
-      if (!r.ok) throw new Error("Failed to fetch hotel");
-      return r.json();
+    fetch(`https://hotelbooking.stepprojects.ge/api/Hotels/GetHotel/${hotelId}`).then(res => {
+      if (!res.ok) {
+        throw new Error("Failed to fetch hotel");
+      }
+      return res.json();
     }),
-    fetch(`https://hotelbooking.stepprojects.ge/api/Rooms/GetRoomTypes`).then(r => {
-      if (!r.ok) throw new Error("Failed to fetch room types");
-      return r.json();
+    fetch("https://hotelbooking.stepprojects.ge/api/Rooms/GetRoomTypes").then(res => {
+      if (!res.ok) {
+        throw new Error("Failed to fetch room types");
+      }
+      return res.json();
     })
   ])
     .then(([hotel, types]) => {
@@ -53,15 +53,15 @@ function getHotelDetails() {
       roomTypes = types;
       renderPage();
     })
-    .catch(err => {
-      console.error(err);
+    .catch(error => {
+      console.error(error);
       detailsContainer.innerHTML = `<p class="error-text">Could not load hotel details.</p>`;
     });
 }
 
 function renderPage() {
-  const maxPrice = currentHotel.rooms.length
-    ? Math.max(...currentHotel.rooms.map(r => r.pricePerNight))
+  const maxPrice = currentHotel.rooms && currentHotel.rooms.length
+    ? Math.max(...currentHotel.rooms.map(room => room.pricePerNight))
     : 1000;
 
   detailsContainer.innerHTML = `
@@ -143,25 +143,67 @@ function renderPage() {
     </section>
   `;
 
-  document.getElementById("priceRange").addEventListener("input", e => {
-    document.getElementById("priceValue").innerText = e.target.value;
+  const priceRange = document.getElementById("priceRange");
+  const priceValue = document.getElementById("priceValue");
+  const checkInInput = document.getElementById("checkIn");
+  const checkOutInput = document.getElementById("checkOut");
+
+  priceRange.addEventListener("input", function (event) {
+    priceValue.innerText = event.target.value;
+  });
+
+  const today = new Date().toISOString().split("T")[0];
+  checkInInput.min = today;
+  checkOutInput.min = today;
+
+  checkInInput.addEventListener("change", function (event) {
+    checkOutInput.min = event.target.value;
+
+    if (checkOutInput.value && checkOutInput.value <= event.target.value) {
+      checkOutInput.value = "";
+    }
   });
 }
 
 function setRoomType(typeId, event) {
-  document.getElementById("roomType").value = typeId;
+  const roomTypeSelect = document.getElementById("roomType");
+  roomTypeSelect.value = typeId;
 
-  document.querySelectorAll(".filter-tab").forEach(btn => {
-    btn.classList.remove("active");
+  document.querySelectorAll(".filter-tab").forEach(button => {
+    button.classList.remove("active");
   });
 
   event.target.classList.add("active");
 }
 
+function validateDates(checkIn, checkOut) {
+  if (!checkIn || !checkOut) {
+    showMessage("Please choose check-in and check-out dates ❌", "error");
+    return false;
+  }
+
+  const checkInDateObj = new Date(checkIn);
+  const checkOutDateObj = new Date(checkOut);
+
+  if (checkOutDateObj <= checkInDateObj) {
+    showMessage("Check-out must be after check-in ❌", "error");
+    return false;
+  }
+
+  return true;
+}
+
 function applyFilter() {
   const maxPrice = Number(document.getElementById("priceRange").value);
   const selectedTypeId = document.getElementById("roomType").value;
+  const checkIn = document.getElementById("checkIn").value;
+  const checkOut = document.getElementById("checkOut").value;
+  const guests = Number(document.getElementById("guests").value);
   const roomsContainer = document.getElementById("rooms");
+
+  if (!validateDates(checkIn, checkOut)) {
+    return;
+  }
 
   let rooms = [...currentHotel.rooms];
 
@@ -169,6 +211,15 @@ function applyFilter() {
 
   if (selectedTypeId !== "all") {
     rooms = rooms.filter(room => String(room.roomTypeId) === String(selectedTypeId));
+  }
+
+  if (guests > 0) {
+    rooms = rooms.filter(room => {
+      if (!room.maximumGuests) {
+        return true;
+      }
+      return room.maximumGuests >= guests;
+    });
   }
 
   roomsContainer.classList.remove("hidden-rooms");
@@ -194,7 +245,10 @@ roomsContainer.innerHTML = rooms.map(room => `
 
       <p class="room-night-text">a night</p>
 
-      <button class="main-btn room-book-btn" onclick="bookHotel(${currentHotel.id}, ${room.id})">
+      <button
+        class="main-btn room-book-btn"
+        onclick="bookHotel(${currentHotel.id}, ${room.id})"
+      >
         Book this room
       </button>
     </div>
@@ -210,12 +264,18 @@ function resetFilter(maxPrice) {
   document.getElementById("checkOut").value = "";
   document.getElementById("guests").value = 1;
 
-  document.querySelectorAll(".filter-tab").forEach(btn => {
-    btn.classList.remove("active");
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("checkIn").min = today;
+  document.getElementById("checkOut").min = today;
+
+  document.querySelectorAll(".filter-tab").forEach(button => {
+    button.classList.remove("active");
   });
 
   const firstTab = document.querySelector(".filter-tab");
-  if (firstTab) firstTab.classList.add("active");
+  if (firstTab) {
+    firstTab.classList.add("active");
+  }
 
   const roomsContainer = document.getElementById("rooms");
   roomsContainer.innerHTML = "";
@@ -223,6 +283,41 @@ function resetFilter(maxPrice) {
 }
 
 function bookHotel(hotelId, roomId) {
+  const checkIn = document.getElementById("checkIn").value;
+  const checkOut = document.getElementById("checkOut").value;
+
+  if (!validateDates(checkIn, checkOut)) {
+    return;
+  }
+
+  const room = currentHotel.rooms.find(item => item.id === roomId);
+
+  if (!room) {
+    showMessage("Room not found ❌", "error");
+    return;
+  }
+
+  const bookingInfo = {
+    hotelId: currentHotel.id,
+    roomId: room.id,
+    hotelName: currentHotel.name,
+    roomName: room.name,
+    city: currentHotel.city,
+    address: currentHotel.address,
+    image: getRoomImage(room.name),
+    checkInDate: checkIn,
+    checkOutDate: checkOut,
+    customerName: myCustomerName
+  };
+
+  console.log("BOOKING PAYLOAD:", {
+    hotelId: hotelId,
+    roomId: roomId,
+    customerName: myCustomerName,
+    checkInDate: checkIn,
+    checkOutDate: checkOut
+  });
+
   fetch("https://hotelbooking.stepprojects.ge/api/Booking", {
     method: "POST",
     headers: {
@@ -232,44 +327,41 @@ function bookHotel(hotelId, roomId) {
       hotelId: hotelId,
       roomId: roomId,
       customerName: myCustomerName,
-      checkInDate: "2055-05-10",
-      checkOutDate: "2055-05-15"
+      checkInDate: checkIn,
+      checkOutDate: checkOut
     })
   })
     .then(res => {
       return res.text().then(text => {
+        console.log("BOOKING RESPONSE:", res.status, text);
+
         if (!res.ok) {
-          throw new Error(text);
+          if (text.includes("already booked")) {
+            throw new Error("This room is already booked for the selected dates ❌");
+          }
+          throw new Error(text || "Booking failed ❌");
         }
+
         return text;
       });
     })
-.then(() => {
-  let myBookedRooms = JSON.parse(localStorage.getItem("myBookedRooms")) || [];
-  myBookedRooms.push(bookingInfo);
-  localStorage.setItem("myBookedRooms", JSON.stringify(myBookedRooms));
+    .then(() => {
+      let myBookedRooms = JSON.parse(localStorage.getItem("myBookedRooms")) || [];
+      myBookedRooms.push(bookingInfo);
+      localStorage.setItem("myBookedRooms", JSON.stringify(myBookedRooms));
 
-  showMessage("Room booked successfully ✅", "success");
+      showMessage("Room booked successfully ✅", "success");
 
-  setTimeout(() => {
-    window.location.href = "bookings.html";
-  }, 1200);
-})
-    const room = currentHotel.rooms.find(r => r.id === roomId);
-
-const bookingInfo = {
-  hotelId: currentHotel.id,
-  roomId: room.id,
-  hotelName: currentHotel.name,
-  roomName: room.name,
-  city: currentHotel.city,
-  address: currentHotel.address,
-  image: getRoomImage(room.name),
-  checkInDate: "2055-05-10",
-  checkOutDate: "2055-05-15",
-  customerName: myCustomerName
-};
+      setTimeout(() => {
+        window.location.href = "bookings.html";
+      }, 1200);
+    })
+    .catch(error => {
+      console.error(error);
+      showMessage(error.message || "Booking failed ❌", "error");
+    });
 }
+
 function showMessage(text, type) {
   let oldMessage = document.querySelector(".custom-message");
   if (oldMessage) {

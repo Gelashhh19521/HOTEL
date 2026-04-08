@@ -1,6 +1,8 @@
 const hotelsContainer = document.getElementById("hotels");
 const citiesSelect = document.getElementById("cities");
 
+let allHotels = [];
+
 function getAllHotels() {
   hotelsContainer.innerHTML = `<p class="loading-text">Loading hotels...</p>`;
 
@@ -12,7 +14,9 @@ function getAllHotels() {
       return res.json();
     })
     .then(data => {
-      renderHotels(data);
+      allHotels = data || [];
+      renderCitiesFromHotels(allHotels);
+      renderHotels(allHotels);
     })
     .catch(error => {
       console.error(error);
@@ -20,47 +24,28 @@ function getAllHotels() {
     });
 }
 
-function getAllCities() {
-  fetch("https://hotelbooking.stepprojects.ge/api/Cities/GetAll")
-    .then(res => {
-      if (!res.ok) {
-        throw new Error("Failed to fetch cities");
-      }
-      return res.json();
-    })
-    .then(data => {
-      renderCities(data);
-    })
-    .catch(error => {
-      console.error(error);
-    });
-}
+function renderCitiesFromHotels(hotels) {
+  citiesSelect.innerHTML = `<option value="all">All Cities</option>`;
 
-function renderCities(cities) {
-  cities.forEach(city => {
+  const uniqueCities = [];
+  const usedCityNames = new Set();
+
+  hotels.forEach(hotel => {
+    const cityName = hotel.city?.trim();
+
+    if (cityName && !usedCityNames.has(cityName)) {
+      usedCityNames.add(cityName);
+      uniqueCities.push(cityName);
+    }
+  });
+
+  uniqueCities.sort((a, b) => a.localeCompare(b));
+
+  uniqueCities.forEach(cityName => {
     citiesSelect.innerHTML += `
-      <option value="${city.id}">${city.name}</option>
+      <option value="${cityName}">${cityName}</option>
     `;
   });
-}
-
-function getHotelsByCity(cityId) {
-  hotelsContainer.innerHTML = `<p class="loading-text">Loading hotels...</p>`;
-
-  fetch(`https://hotelbooking.stepprojects.ge/api/Hotels/GetByCityId/${cityId}`)
-    .then(res => {
-      if (!res.ok) {
-        throw new Error("Failed to fetch hotels by city");
-      }
-      return res.json();
-    })
-    .then(data => {
-      renderHotels(data);
-    })
-    .catch(error => {
-      console.error(error);
-      hotelsContainer.innerHTML = "<p class='error-text'>Filtered hotels could not be loaded.</p>";
-    });
 }
 
 function renderHotels(hotels) {
@@ -92,20 +77,24 @@ function renderHotels(hotels) {
   });
 }
 
+function filterHotelsByCity(cityName) {
+  if (cityName === "all") {
+    renderHotels(allHotels);
+    return;
+  }
+
+  const filteredHotels = allHotels.filter(hotel => hotel.city === cityName);
+  renderHotels(filteredHotels);
+}
+
 function goToDetails(id) {
   localStorage.setItem("hotelId", id);
   window.location.href = "details.html";
 }
 
 citiesSelect.addEventListener("change", function () {
-  const selectedCityId = this.value;
-
-  if (selectedCityId === "all") {
-    getAllHotels();
-  } else {
-    getHotelsByCity(selectedCityId);
-  }
+  const selectedCity = this.value;
+  filterHotelsByCity(selectedCity);
 });
 
 getAllHotels();
-getAllCities();
